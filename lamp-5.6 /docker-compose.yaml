@@ -1,0 +1,48 @@
+version: '3.7'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8080:80"
+    volumes:
+      - ./www:/var/www/html
+    depends_on:
+      - db
+    networks:
+      - lamp_network
+
+  db:
+    image: docker.io/mariadb:10.5
+    environment:
+      MYSQL_DATABASE: dbname
+      MYSQL_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    networks:
+      - lamp_network
+
+  phpmyadmin:
+    image: docker.io/phpmyadmin/phpmyadmin:5.2.1  # Especifica la versión que prefieras
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: root  # Asegúrate de que coincida con la contraseña del contenedor MariaDB
+    ports:
+      - "8000:80"
+    depends_on:
+      - db
+    networks:
+      - lamp_network
+
+volumes:
+  mariadb-data:
+    driver: local
+
+networks:
+  lamp_network:
+    driver: bridge
+
