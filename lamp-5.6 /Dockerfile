@@ -16,6 +16,9 @@ RUN apt-get update \
     zlib1g-dev \
     libicu-dev \
     unzip \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libpng-dev \
     --allow-unauthenticated \
     || true \
     && apt-get clean
@@ -29,6 +32,10 @@ RUN docker-php-ext-configure zip --with-zlib-dir=/usr \
     && docker-php-ext-install intl \
     && docker-php-ext-install pdo \
     && docker-php-ext-install pdo_mysql
+
+# Configurar e instalar la extensión GD con soporte para JPEG y FreeType
+RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
+    && docker-php-ext-install gd
 
 # Instalar Composer 1.x (compatible con PHP 5.6)
 RUN curl -sS https://getcomposer.org/download/1.10.22/composer.phar -o /usr/local/bin/composer \
