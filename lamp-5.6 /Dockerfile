@@ -5,7 +5,7 @@ RUN rm -f /etc/apt/sources.list.d/* \
     && rm -f /etc/apt/sources.list \
     && echo "deb http://archive.debian.org/debian stretch main" > /etc/apt/sources.list
 
-# Instalar dependencias necesarias (incluyendo ZLIB, ICU y unzip)
+# Instalar dependencias necesarias (incluyendo ZLIB, ICU, unzip y demás)
 RUN apt-get update \
     && apt-get install -y \
     ca-certificates \
@@ -26,7 +26,9 @@ RUN docker-php-ext-configure zip --with-zlib-dir=/usr \
     && docker-php-ext-install mysqli \
     && docker-php-ext-install mbstring \
     && docker-php-ext-configure intl \
-    && docker-php-ext-install intl
+    && docker-php-ext-install intl \
+    && docker-php-ext-install pdo \
+    && docker-php-ext-install pdo_mysql
 
 # Instalar Composer 1.x (compatible con PHP 5.6)
 RUN curl -sS https://getcomposer.org/download/1.10.22/composer.phar -o /usr/local/bin/composer \
