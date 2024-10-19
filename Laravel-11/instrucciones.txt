@@ -1,0 +1,27 @@
+1.-Instalar proyecto
+
+composer create-project --prefer-dist laravel/laravel . "11.*"
+
+2.-Dar permisos
+
+chown -R www-data:www-data /var/www/html/storage
+chmod -R 775 /var/www/html/storage
+
+3.-Permiso de base de datos sqlite
+
+chown www-data:www-data /var/www/html/database/database.sqlite
+chmod 664 /var/www/html/database/database.sqlite
+
+4.-Cambiar .env para usar mariaDB
+
+DB_CONNECTION=mysql
+DB_HOST=db
+DB_PORT=3306
+DB_DATABASE=laravel
+DB_USERNAME=root
+DB_PASSWORD=root
+
+5.-Ejecutar migraciones
+
+php artisan migrate
+
