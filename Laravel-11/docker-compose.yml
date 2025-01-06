@@ -1,43 +1,73 @@
 version: '3.8'
 
 services:
-  web:
-    build: .
-    container_name: laravel_web
-    ports:
-      - "8080:80"
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: laravel-app:latest
+    container_name: laravel-app
     volumes:
       - ./www:/var/www/html
+      - ./vhost.conf:/etc/apache2/sites-available/000-default.conf
+    ports:
+      - "8080:80"
+    environment:
+      - APACHE_DOCUMENT_ROOT=/var/www/html/public
+    depends_on:
+      - db
+    working_dir: /var/www/html
+    stdin_open: true
+    tty: true
     networks:
-      - laravel_network
+      - laravel-network
 
   db:
-    image: docker.io/mariadb:10.11
+    image: mariadb:10.11
     container_name: mariadb
+    ports:
+      - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: laravel
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
     volumes:
       - db_data:/var/lib/mysql
     networks:
-      - laravel_network
-    ports:
-      - "3306:3306"
+      - laravel-network
 
   phpmyadmin:
-    image: docker.io/phpmyadmin:5
+    image: phpmyadmin/phpmyadmin:5.2
     container_name: phpmyadmin
-    environment:
-      PMA_HOST: db
-      MYSQL_ROOT_PASSWORD: root
+    depends_on:
+      - db
     ports:
       - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: root
     networks:
-      - laravel_network
+      - laravel-network
 
-networks:
-  laravel_network:
-    driver: bridge
+  node:
+    image: node:18
+    container_name: node
+    working_dir: /var/www/html
+    command: ["tail", "-f", "/dev/null"]
+    volumes:
+      - ./www:/var/www/html
+    ports:
+      - "3000:3000"
+    stdin_open: true
+    tty: true
+    networks:
+      - laravel-network
 
 volumes:
   db_data:
+
+networks:
+  laravel-network:
+

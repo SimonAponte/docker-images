@@ -1,51 +1,26 @@
-# Usamos la imagen oficial de PHP 8.3 con Apache
 FROM php:8.3-apache
 
-# Variables de entorno
-ENV APACHE_DOCUMENT_ROOT /var/www/html
-
-# Actualizamos e instalamos dependencias
+# Actualizar e instalar dependencias
 RUN apt-get update && apt-get install -y \
-    libfreetype6-dev \
-    libjpeg62-turbo-dev \
-    libpng-dev \
-    libzip-dev \
-    libonig-dev \
-    libxml2-dev \
-    mariadb-client \
-    git \
-    unzip \
-    curl \
-    nano \
-    wget \
-    nodejs \
-    npm \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd zip fileinfo 
+    libicu-dev libzip-dev unzip git curl zip nano \
+    libonig-dev  # Dependencia para mbstring
 
-# Instalamos Composer 2 globalmente
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# Instalar las extensiones de PHP una por una para identificar el error
+RUN docker-php-ext-install pdo_mysql
+RUN docker-php-ext-install mbstring
+RUN docker-php-ext-install intl
+RUN docker-php-ext-install opcache
+RUN docker-php-ext-install zip
+RUN docker-php-ext-install bcmath
 
-# Configuración del directorio de trabajo
-WORKDIR /var/www/html
+# Limpiar la caché
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Instalamos Node.js v18 y NPM v10
-RUN npm install -g npm@10 && npm install -g vite@5
-
-# Habilitar módulos de Apache necesarios para Laravel
+# Habilitar mod_rewrite
 RUN a2enmod rewrite
 
-# Copiamos el archivo de vhost
-COPY ./vhost.conf /etc/apache2/sites-available/000-default.conf
+# Instalar Composer
+COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
 
-# Copiamos php.ini
-COPY ./php.ini /usr/local/etc/php/php.ini
-
-# Asignamos permisos a la carpeta www
-RUN chown -R www-data:www-data /var/www/html
-
-# Exponemos el puerto 80
-EXPOSE 80
-
-# Ejecutamos Apache en modo foreground
-CMD ["apache2-foreground"]
+# Configuración de permisos y directorio de trabajo
+WORKDIR /var/www/html
